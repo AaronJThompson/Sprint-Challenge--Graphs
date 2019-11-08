@@ -65,19 +65,31 @@ def reverseDir(dir):
 
 def findShortestPath(adj):
     q = Queue()
-        q.enqueue([starting_vertex])
-        visited = set()
-        while q.size() > 0:
-            path = q.dequeue()
-            vert = path[-1]
-            if vert not in visited:
-                if vert == destination_vertex:
-                    return path
-                visited.add(vert)
-                for next_vert in self.vertices[vert]:
-                    new_path = list(path)
-                    new_path.append(next_vert)
-                    q.enqueue(new_path)
+    q.enqueue([player.currentRoom.id])
+    visited = set()
+    while q.size() > 0:
+        path = q.dequeue()
+        vert = path[-1]
+        if vert not in visited:
+            if "?" in adj[vert].values():
+                return path
+            visited.add(vert)
+            for ext, room in adj[vert].values():
+                new_path = list(path)
+                new_path.append(room)
+                q.enqueue(new_path)
+    return None
+
+def getDirPath(adj, path):
+    new_path = []
+    lastRoom = None
+    for room in path:
+        if lastRoom:
+            for direction, adjRoom in adj[lastRoom].items():
+                if adjRoom == room:
+                    new_path.append(direction)
+        lastRoom = room
+    return new_path
 
 def createTraversalPath():
     adjacency = dict()
