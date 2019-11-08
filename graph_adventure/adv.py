@@ -112,7 +112,7 @@ def createTraversalPath():
             adjacency[player.currentRoom.id][reverseDir(lastDir)] = lastRoom
         lastRoom = player.currentRoom.id
         
-        moved = False
+        # moved = False
         # for ext, room in adjacency[player.currentRoom.id].items():
         #     if room == "?":
         #         lastDir = ext
@@ -121,38 +121,34 @@ def createTraversalPath():
         #         moved = True
         #         player.travel(ext)
         #         break
-        def move(direction):
-            nonlocal lastDir
-            nonlocal moved
+
+
+        cur_adj = adjacency[player.currentRoom.id]
+        unvisited = list()
+        for direction, room in cur_adj.items():
+            if room == "?":
+                unvisited.append(direction)
+
+        if len(unvisited) > 0:
+            random.shuffle(unvisited)
+            direction = unvisited[0]
             lastDir = direction
             traversal.push(direction)
             traversalPath.append(direction)
-            moved = True
             player.travel(direction)
-
-        cur_adj = adjacency[player.currentRoom.id]
-        if "s" in cur_adj and cur_adj["s"] == "?":
-            move("s")
-        elif "e" in cur_adj and cur_adj["e"] == "?":
-            move("e")
-        elif "w" in cur_adj and cur_adj["w"] == "?":
-            move("w")
-        elif "n" in cur_adj and cur_adj["n"] == "?":
-            move("n")
-        
-
-        # if not moved:
-        #     ext = reverseDir(traversal.pop())
-        #     traversalPath.append(ext)
-        #     lastDir = ext
-        #     player.travel(ext)
-        if not moved:
+        else:
             path = findShortestPath(adjacency)
             if path is not None:
                 dir_path = getDirPath(adjacency, path)
                 travelDirPath(traversalPath, dir_path)
                 lastDir = dir_path[-1]
                 lastRoom = path[-2]
+
+        # if not moved:
+        #     ext = reverseDir(traversal.pop())
+        #     traversalPath.append(ext)
+        #     lastDir = ext
+        #     player.travel(ext)
 
 createTraversalPath()
 
