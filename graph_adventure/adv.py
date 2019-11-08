@@ -48,16 +48,23 @@ def reverseDir(dir):
         return "e"
     else:
         return None
-        
+
 def createTraversalPath():
     adjacency = dict()
     traversal = Stack()
     lastDir = None
+    lastRoom = None
     while len(adjacency) < len(world.rooms):
         if player.currentRoom not in adjacency:
             adj = dict()
             for ext in player.currentRoom.getExits():
                 adj[ext] = "?"
+            adjacency[player.currentRoom] = adj
+        if lastRoom:
+            adjacency[lastRoom][lastDir] = player.currentRoom
+            adjacency[player.currentRoom][reverseDir(lastDir)] = lastRoom
+        lastRoom = player.currentRoom
+
 
 # TRAVERSAL TEST
 visited_rooms = set()
