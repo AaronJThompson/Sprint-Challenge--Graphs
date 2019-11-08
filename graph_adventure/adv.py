@@ -113,14 +113,34 @@ def createTraversalPath():
         lastRoom = player.currentRoom.id
         
         moved = False
-        for ext, room in adjacency[player.currentRoom.id].items():
-            if room == "?":
-                lastDir = ext
-                traversal.push(ext)
-                traversalPath.append(ext)
-                moved = True
-                player.travel(ext)
-                break
+        # for ext, room in adjacency[player.currentRoom.id].items():
+        #     if room == "?":
+        #         lastDir = ext
+        #         traversal.push(ext)
+        #         traversalPath.append(ext)
+        #         moved = True
+        #         player.travel(ext)
+        #         break
+        def move(direction):
+            nonlocal lastDir
+            nonlocal moved
+            lastDir = direction
+            traversal.push(direction)
+            traversalPath.append(direction)
+            moved = True
+            player.travel(direction)
+
+        cur_adj = adjacency[player.currentRoom.id]
+        if "s" in cur_adj and cur_adj["s"] == "?":
+            move("s")
+        elif "e" in cur_adj and cur_adj["e"] == "?":
+            move("e")
+        elif "w" in cur_adj and cur_adj["w"] == "?":
+            move("w")
+        elif "n" in cur_adj and cur_adj["n"] == "?":
+            move("n")
+        
+
         # if not moved:
         #     ext = reverseDir(traversal.pop())
         #     traversalPath.append(ext)
