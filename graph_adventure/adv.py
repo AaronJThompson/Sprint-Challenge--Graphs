@@ -78,7 +78,6 @@ def findShortestPath(adj):
                 new_path = list(path)
                 new_path.append(room)
                 q.enqueue(new_path)
-    print("Couldn't find path")
     return None
 
 def getDirPath(adj, path):
@@ -149,8 +148,18 @@ def createTraversalPath():
         #     traversalPath.append(ext)
         #     lastDir = ext
         #     player.travel(ext)
+lowest = 999999
+shortestPath = []
+for i in range(10000):
+    player.currentRoom = world.startingRoom
+    traversalPath = []
+    createTraversalPath()
+    if len(traversalPath) < lowest:
+        lowest = len(traversalPath)
+        shortestPath = traversalPath
 
-createTraversalPath()
+traversalPath = shortestPath
+print(shortestPath)
 
 # TRAVERSAL TEST
 visited_rooms = set()
