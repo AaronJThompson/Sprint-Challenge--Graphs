@@ -74,21 +74,21 @@ def findShortestPath(adj):
             if "?" in adj[vert].values():
                 return path
             visited.add(vert)
-            for ext, room in adj[vert].values():
+            for room in adj[vert].values():
                 new_path = list(path)
                 new_path.append(room)
                 q.enqueue(new_path)
+    print("Couldn't find path")
     return None
 
 def getDirPath(adj, path):
     new_path = []
-    lastRoom = None
-    for room in path:
-        if lastRoom:
-            for direction, adjRoom in adj[lastRoom].items():
-                if adjRoom == room:
+    for idx, room in enumerate(path):
+        if idx > 0:
+            lastRoom = path[idx - 1]
+            for direction in adj[lastRoom]:
+                if adj[lastRoom][direction] == room:
                     new_path.append(direction)
-        lastRoom = room
     return new_path
 
 def travelDirPath(traversal, path):
@@ -127,7 +127,12 @@ def createTraversalPath():
         #     lastDir = ext
         #     player.travel(ext)
         if not moved:
-            findShortestPath()
+            path = findShortestPath(adjacency)
+            if path is not None:
+                dir_path = getDirPath(adjacency, path)
+                travelDirPath(traversalPath, dir_path)
+                lastDir = dir_path[-1]
+                lastRoom = path[-2]
 
 createTraversalPath()
 
