@@ -9,7 +9,7 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 
-# roomGraph={0: [(3, 5), {'n': 1}], 1: [(3, 6), {'s': 0, 'n': 2}], 2: [(3, 7), {'s': 1}]}
+#roomGraph={0: [(3, 5), {'n': 1}], 1: [(3, 6), {'s': 0, 'n': 2}], 2: [(3, 7), {'s': 1}]}
 # roomGraph={0: [(3, 5), {'n': 1, 's': 5, 'e': 3, 'w': 7}], 1: [(3, 6), {'s': 0, 'n': 2}], 2: [(3, 7), {'s': 1}], 3: [(4, 5), {'w': 0, 'e': 4}], 4: [(5, 5), {'w': 3}], 5: [(3, 4), {'n': 0, 's': 6}], 6: [(3, 3), {'n': 5}], 7: [(2, 5), {'w': 8, 'e': 0}], 8: [(1, 5), {'e': 7}]}
 # roomGraph={0: [(3, 5), {'n': 1, 's': 5, 'e': 3, 'w': 7}], 1: [(3, 6), {'s': 0, 'n': 2}], 2: [(3, 7), {'s': 1}], 3: [(4, 5), {'w': 0, 'e': 4}], 4: [(5, 5), {'w': 3}], 5: [(3, 4), {'n': 0, 's': 6}], 6: [(3, 3), {'n': 5, 'w': 11}], 7: [(2, 5), {'w': 8, 'e': 0}], 8: [(1, 5), {'e': 7}], 9: [(1, 4), {'n': 8, 's': 10}], 10: [(1, 3), {'n': 9, 'e': 11}], 11: [(2, 3), {'w': 10, 'e': 6}]}
 # roomGraph={0: [(3, 5), {'n': 1, 's': 5, 'e': 3, 'w': 7}], 1: [(3, 6), {'s': 0, 'n': 2, 'e': 12, 'w': 15}], 2: [(3, 7), {'s': 1}], 3: [(4, 5), {'w': 0, 'e': 4}], 4: [(5, 5), {'w': 3}], 5: [(3, 4), {'n': 0, 's': 6}], 6: [(3, 3), {'n': 5, 'w': 11}], 7: [(2, 5), {'w': 8, 'e': 0}], 8: [(1, 5), {'e': 7}], 9: [(1, 4), {'n': 8, 's': 10}], 10: [(1, 3), {'n': 9, 'e': 11}], 11: [(2, 3), {'w': 10, 'e': 6}], 12: [(4, 6), {'w': 1, 'e': 13}], 13: [(5, 6), {'w': 12, 'n': 14}], 14: [(5, 7), {'s': 13}], 15: [(2, 6), {'e': 1, 'w': 16}], 16: [(1, 6), {'n': 17, 'e': 15}], 17: [(1, 7), {'s': 16}]}
@@ -19,10 +19,147 @@ world.loadGraph(roomGraph)
 world.printRooms()
 player = Player("Name", world.startingRoom)
 
+class Stack:
+    
+    def __init__(self):
+        self.storage = []
+
+    def push(self, item):
+        self.storage.append(item)
+
+    def pop(self):
+        if len(self.storage) > 0:
+            return self.storage.pop()
+        return None
+
+    def __len__(self):
+        return len(self.storage)
+
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
 
 # FILL THIS IN
-traversalPath = ['n', 's']
+traversalPath = []
 
+def reverseDir(dir):
+    if dir == "n":
+        return "s"
+    if dir == "s":
+        return "n"
+    if dir == "e":
+        return "w"
+    if dir == "w":
+        return "e"
+    else:
+        return None
+
+def findShortestPath(adj):
+    q = Queue()
+    q.enqueue([player.currentRoom.id])
+    visited = set()
+    while q.size() > 0:
+        path = q.dequeue()
+        vert = path[-1]
+        if vert not in visited:
+            if "?" in adj[vert].values():
+                return path
+            visited.add(vert)
+            for room in adj[vert].values():
+                new_path = list(path)
+                new_path.append(room)
+                q.enqueue(new_path)
+    return None
+
+def getDirPath(adj, path):
+    new_path = []
+    for idx, room in enumerate(path):
+        if idx > 0:
+            lastRoom = path[idx - 1]
+            for direction in adj[lastRoom]:
+                if adj[lastRoom][direction] == room:
+                    new_path.append(direction)
+    return new_path
+
+def travelDirPath(traversal, path):
+    for direction in path:
+        traversal.append(direction)
+        player.travel(direction)
+
+def createTraversalPath():
+    adjacency = dict()
+    traversal = Stack()
+    lastDir = None
+    lastRoom = None
+    while len(adjacency) < len(world.rooms):
+        if player.currentRoom.id not in adjacency:
+            adj = dict()
+            for ext in player.currentRoom.getExits():
+                adj[ext] = "?"
+            adjacency[player.currentRoom.id] = adj
+        if lastRoom:
+            adjacency[lastRoom][lastDir] = player.currentRoom.id
+            adjacency[player.currentRoom.id][reverseDir(lastDir)] = lastRoom
+        lastRoom = player.currentRoom.id
+        
+        # moved = False
+        # for ext, room in adjacency[player.currentRoom.id].items():
+        #     if room == "?":
+        #         lastDir = ext
+        #         traversal.push(ext)
+        #         traversalPath.append(ext)
+        #         moved = True
+        #         player.travel(ext)
+        #         break
+
+
+        cur_adj = adjacency[player.currentRoom.id]
+        unvisited = list()
+        for direction, room in cur_adj.items():
+            if room == "?":
+                unvisited.append(direction)
+
+        if len(unvisited) > 0:
+            random.shuffle(unvisited)
+            direction = unvisited[0]
+            lastDir = direction
+            traversal.push(direction)
+            traversalPath.append(direction)
+            player.travel(direction)
+        else:
+            path = findShortestPath(adjacency)
+            if path is not None:
+                dir_path = getDirPath(adjacency, path)
+                travelDirPath(traversalPath, dir_path)
+                lastDir = dir_path[-1]
+                lastRoom = path[-2]
+
+        # if not moved:
+        #     ext = reverseDir(traversal.pop())
+        #     traversalPath.append(ext)
+        #     lastDir = ext
+        #     player.travel(ext)
+lowest = 999999
+shortestPath = []
+for i in range(10000):
+    player.currentRoom = world.startingRoom
+    traversalPath = []
+    createTraversalPath()
+    if len(traversalPath) < lowest:
+        lowest = len(traversalPath)
+        shortestPath = traversalPath
+
+traversalPath = shortestPath
+print(shortestPath)
 
 # TRAVERSAL TEST
 visited_rooms = set()
@@ -50,3 +187,6 @@ else:
 #         player.travel(cmds[0], True)
 #     else:
 #         print("I did not understand that command.")
+
+# ['e', 's', 'e', 's', 'n', 'w', 's', 'w', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 'n', 'n', 'n', 'n', 'n', 'w', 'w', 'w', 'n', 's', 'e', 's', 'e', 's', 's', 's', 'n', 'n', 'n', 'w', 's', 'n', 'w', 's', 'n', 'e', 'n', 'e', 'n', 'w', 'e', 'n', 'w', 'e', 'n', 'w', 'w', 's', 'n', 'e', 'e', 'n', 'w', 'e', 'n', 'w', 'e', 'e', 'e', 's', 'e', 's', 's', 'n', 'n', 'e', 's', 's', 'e', 's', 'e', 'w', 's', 'e', 'e', 'e', 'e', 'w', 'w', 'w', 'w', 'n', 'n', 'w', 's', 's', 's', 'e', 'w', 'n', 'n', 'n', 'n', 'e', 'n', 'e', 's', 's', 'n', 'n', 'w', 's', 'w', 'n', 'w', 'w', 's', 's', 's', 'e', 's', 's', 's', 's', 's', 's', 's', 'n', 'n', 'w', 's', 'n', 'e', 'n', 'n', 'e', 's', 's', 's', 'n', 'n', 'e', 's', 's', 'n', 'n', 'e', 's', 's', 'n', 'n', 'w', 'w', 'n', 'e', 'e', 'n', 'e', 's', 's', 'n', 'n', 'e', 's', 's', 's', 's', 'n', 'n', 'e', 'w', 'n', 'n', 'e', 'w', 'w', 'w', 's', 'w', 'w', 'w', 'n', 'w', 's', 's', 'n', 'n', 'e', 'n', 'n', 'w', 's', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'e', 'n', 'e', 'n', 'e', 'n', 'e', 'n', 'n', 'n', 's', 'e', 'n', 'n', 'e', 'e', 'e', 'n', 's', 'e', 'w', 'w', 'n', 's', 'w', 'n', 's', 'w', 's', 's', 'w', 's', 's', 'w', 'n', 'n', 'n', 's', 's', 's', 's', 'w', 's', 'w', 'n', 'n', 'n', 'n', 's', 's', 'e', 'n', 'n', 's', 's', 'w', 's', 's', 's', 'e', 's', 'e', 's', 'e', 'e', 's', 'e', 'e', 'e', 'w', 's', 'n', 'w', 'w', 's', 's', 's', 's', 'e', 'e', 'w', 'w', 'n', 'e', 'e', 'w', 'w', 'n', 'e', 'e', 'w', 'n', 's', 'w', 'n', 'n', 'n', 'e', 'e', 'e', 'w', 'w', 'w', 'w', 'w', 's', 'e', 'w', 'n', 'n', 'w', 's', 's', 'n', 'n', 'n', 'e', 'e', 's', 'n', 'e', 's', 'e', 'e', 'e', 'e', 'w', 'n', 's', 'w', 'w', 'w', 'n', 'e', 'e', 'w', 'w', 'w', 'w', 'n', 'e', 'e', 'e', 'e', 'e', 'e', 's', 'n', 'w', 'w', 'w', 'w', 'w', 'n', 'e', 'n', 'e', 's', 'n', 'e', 'e', 'n', 'e', 'w', 's', 'e', 'w', 'w', 's', 'e', 'e', 'e', 's', 'n', 'w', 'w', 'w', 'n', 'w', 'w', 'n', 'e', 'e', 'n', 'e', 'w', 's', 'w', 'n', 'n', 'e', 'e', 'e', 's', 'n', 'w', 'w', 'w', 's', 's', 'w', 's', 's', 'w', 's', 'w', 's', 'w', 'w', 'w', 'n', 'w', 'n', 'w', 'e', 'n', 'n', 's', 'e', 's', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'e', 'n', 'n', 's', 's', 'w', 'w', 'w', 'w', 'w', 's', 'w', 'e', 'n', 'w', 'w', 'n', 's', 'e', 'n', 's', 'e', 'e', 'n', 'w', 'n', 'n', 'w', 'e', 's', 's', 'e', 'n', 'n', 'n', 's', 's', 's', 's', 'e', 'e', 'n', 'n', 's', 'w', 'n', 's', 'e', 's', 'e', 'n', 'n', 'n', 'e', 'n', 'w', 'w', 'e', 'e', 's', 'e', 'n', 'e', 'e', 'w', 'w', 's', 's', 's', 's', 'e', 'n', 'e', 'n', 'e', 'n', 'e', 'e', 'w', 's', 'n', 'w', 'n', 's', 's', 'w', 'n', 's', 's', 'w', 'n', 'n', 's', 's', 's', 's', 'e', 'n', 'e', 'e', 'e', 'w', 'n', 's', 'w', 'n', 's', 'w', 's', 'e', 'w', 'w', 's', 'e', 'w', 'w', 'n', 's', 'w', 'w', 'n', 'e', 'w', 's', 's', 'e', 'e', 'w', 'w', 's', 'w', 'n', 'n', 'w', 'n', 'w', 'e', 'e', 'w', 's', 'e', 's', 's', 'e', 's', 's', 'w', 'w', 'n', 'w', 'n', 's', 'e', 'n', 'n', 'w', 'n', 's', 'w', 'n', 'w', 'e', 's', 'e', 'e', 's', 's', 's', 'w', 'w', 'n', 'n', 'w', 'n', 's', 'e', 's', 's', 'w', 'w', 'n', 'n', 'n', 'n', 'n', 's', 's', 's', 's', 'w', 'n', 'n', 'n', 'n', 'w', 'e', 'n', 'n', 's', 's', 's', 's', 's', 'w', 'w', 'w', 'w', 'w', 'e', 's', 'w', 'e', 'n', 'e', 'e', 'n', 'n', 'n', 's', 's', 'w', 'e', 's', 'e', 'n', 'n', 's', 's', 'e', 's', 'w', 'w', 'e', 'e', 'e', 's', 'e', 'n', 's', 'e', 'e', 'e', 'e', 's', 's', 'w', 'w', 'n', 's', 'w', 'w', 'w', 's', 'w', 's', 'w', 'w', 'w', 's', 'w', 'w', 'e', 's', 'e', 's', 's', 'e', 's', 'w', 'w', 's', 'w', 's', 'n', 'e', 'n', 'e', 'e', 'e', 'n', 's', 'e', 'e', 's', 'w', 's', 'w', 's', 'n', 'e', 'n', 'w', 'w', 's', 'w', 'w', 'e', 'e', 's', 'w', 'w', 'w', 'w', 'e', 'e', 'e', 's', 's', 's', 's', 'n', 'w', 'w', 'e', 'e', 'n', 'w', 'e', 'n', 'w', 'e', 'n', 'e', 's', 's', 's', 'e', 'w', 's', 'e', 'w', 'n', 'n', 'n', 'n', 'n', 'n', 'w', 'e', 'e', 'e', 'e', 'n', 'e', 'n', 'n', 'n', 'n', 'n', 'n', 'e', 's', 'n', 'e', 'e', 's', 'w', 's', 'w', 's', 's', 'n', 'n', 'e', 'n', 'e', 'e', 'n', 's', 'e', 'e', 'w', 'w', 's', 'w', 'e', 'n', 'e', 'n', 'n', 'w', 'w', 'w', 'w', 'n', 's', 'w', 'n', 's', 'w', 'w', 'w', 'w', 'w', 'e', 'n', 'n', 's', 'w', 'n', 'w', 'w', 'w', 'e', 'e', 'e', 'n', 's', 's', 'w', 'w', 'e', 's', 'n', 'e', 'e', 's', 'e', 'e', 'e', 'n', 'w', 'w', 'e', 'n', 'w', 'e', 's', 'e', 's', 's', 's', 'n', 'w', 'w', 'w', 'e', 'e', 's', 'w', 'w', 'w', 'w', 'n', 's', 'w', 'e', 'e', 'n', 's', 's', 'w', 's', 'e', 's', 's', 'w', 'n', 'w', 'e', 's', 'e', 'e', 's', 'e', 'e', 'e', 'e', 's', 's', 'w', 's', 's', 's', 'n', 'n', 'w', 's', 'w', 'e', 's', 'w', 'e', 'n', 'n', 'e', 'n', 'e', 's', 's', 's', 'e', 's', 'n', 'e', 's', 's', 's', 'w', 'e', 'n', 'e', 'w', 'n', 'n', 'w', 'w', 's', 'w', 'e', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'w', 's', 'w', 'e', 'n', 'w', 'e', 'e', 'n', 'w', 'n', 'w', 'w', 'w', 'e', 'e', 'e', 's', 'w', 'w', 's', 'w', 'n']
+# ^^ 966 moves
