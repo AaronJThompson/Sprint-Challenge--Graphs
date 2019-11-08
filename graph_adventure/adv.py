@@ -19,6 +19,21 @@ world.loadGraph(roomGraph)
 world.printRooms()
 player = Player("Name", world.startingRoom)
 
+class Stack:
+    
+    def __init__(self):
+        self.storage = []
+
+    def push(self, item):
+        self.storage.append(item)
+
+    def pop(self):
+        if len(self.storage) > 0:
+            return self.storage.pop()
+        return None
+
+    def __len__(self):
+        return len(self.storage)
 
 # FILL THIS IN
 traversalPath = ['n', 's']
