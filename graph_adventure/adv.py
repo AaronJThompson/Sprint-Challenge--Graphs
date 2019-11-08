@@ -91,6 +91,11 @@ def getDirPath(adj, path):
         lastRoom = room
     return new_path
 
+def travelDirPath(traversal, path):
+    for direction in path:
+        traversal.append(direction)
+        player.travel(direction)
+
 def createTraversalPath():
     adjacency = dict()
     traversal = Stack()
@@ -116,11 +121,13 @@ def createTraversalPath():
                 moved = True
                 player.travel(ext)
                 break
+        # if not moved:
+        #     ext = reverseDir(traversal.pop())
+        #     traversalPath.append(ext)
+        #     lastDir = ext
+        #     player.travel(ext)
         if not moved:
-            ext = reverseDir(traversal.pop())
-            traversalPath.append(ext)
-            lastDir = ext
-            player.travel(ext)
+            findShortestPath()
 
 createTraversalPath()
 
