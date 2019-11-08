@@ -36,8 +36,10 @@ class Stack:
         return len(self.storage)
 
 # FILL THIS IN
-traversalPath = ['n', 's']
+traversalPath = []
 
+def createTraversalPath():
+    adjacency = dict()
 
 # TRAVERSAL TEST
 visited_rooms = set()
