@@ -65,11 +65,20 @@ def createTraversalPath():
             adjacency[player.currentRoom][reverseDir(lastDir)] = lastRoom
         lastRoom = player.currentRoom
         
+        moved = False
         for ext, room in enumerate(adjacency[player.currentRoom]):
             if room == "?":
                 lastDir = ext
+                traversal.push(ext)
+                traversalPath.append(ext)
+                moved = True
                 player.travel(ext)
                 break
+        if not moved:
+            ext = reverseDir(traversal.pop())
+            traversalPath.append(ext)
+            lastDir = ext
+            player.travel(ext)
 
 
 # TRAVERSAL TEST
