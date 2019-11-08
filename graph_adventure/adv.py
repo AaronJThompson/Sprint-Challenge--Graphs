@@ -35,8 +35,22 @@ class Stack:
     def __len__(self):
         return len(self.storage)
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
+
 # FILL THIS IN
 traversalPath = []
+
 def reverseDir(dir):
     if dir == "n":
         return "s"
@@ -48,6 +62,22 @@ def reverseDir(dir):
         return "e"
     else:
         return None
+
+def findShortestPath(adj):
+    q = Queue()
+        q.enqueue([starting_vertex])
+        visited = set()
+        while q.size() > 0:
+            path = q.dequeue()
+            vert = path[-1]
+            if vert not in visited:
+                if vert == destination_vertex:
+                    return path
+                visited.add(vert)
+                for next_vert in self.vertices[vert]:
+                    new_path = list(path)
+                    new_path.append(next_vert)
+                    q.enqueue(new_path)
 
 def createTraversalPath():
     adjacency = dict()
